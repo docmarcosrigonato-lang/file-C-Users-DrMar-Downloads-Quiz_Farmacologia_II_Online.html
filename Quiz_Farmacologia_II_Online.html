@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz de Repaso — Farmacología II</title>
+<style>
+:root{
+  --bg: #F6F5F1;
+  --paper: #FFFFFF;
+  --ink: #1D2B26;
+  --ink-soft: #4B5A54;
+  --line: #DDE3DC;
+  --rx: #0B6E4F;
+  --rx-dark: #095A40;
+  --rx-tint: #E7F3EC;
+  --amber: #B45309;
+  --amber-tint: #FDF1E3;
+  --wrong: #B3261E;
+  --wrong-tint: #FBEAE9;
+  --correct: #157F4A;
+  --correct-tint: #E6F5EC;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "SF Mono", Consolas, Menlo, monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background: var(--bg);
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px);
+  background-size: 100% 42px;
+  color: var(--ink);
+  font-family: var(--sans);
+  min-height: 100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding: 28px 16px 60px;
+}
+.app{
+  width:100%;
+  max-width: 720px;
+}
+.masthead{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 10px;
+  margin-bottom: 22px;
+}
+.masthead .rx{
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--rx);
+  letter-spacing: 0.5px;
+}
+.masthead .rx sup{
+  font-size: 14px;
+  color: var(--ink-soft);
+  font-weight: 400;
+  margin-left: 8px;
+}
+.masthead .tag{
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ---- Intro screen ---- */
+.card{
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 var(--line), 0 8px 24px -12px rgba(29,43,38,0.18);
+  padding: 34px 32px;
+}
+.intro h1{
+  font-family: var(--serif);
+  font-size: 28px;
+  line-height: 1.25;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+.intro p{
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0 0 16px;
+}
+.stat-row{
+  display:flex;
+  gap: 14px;
+  margin: 22px 0 26px;
+  flex-wrap: wrap;
+}
+.stat{
+  flex: 1;
+  min-width: 130px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--rx);
+  padding: 12px 14px;
+  background: var(--rx-tint);
+}
+.stat .num{
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--rx-dark);
+  display:block;
+}
+.stat .label{
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.btn{
+  appearance:none;
+  border:none;
+  cursor:pointer;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 3px;
+  padding: 13px 22px;
+  transition: transform .05s ease, background .15s ease;
+}
+.btn:active{transform: translateY(1px);}
+.btn-primary{
+  background: var(--rx);
+  color: #fff;
+  width: 100%;
+}
+.btn-primary:hover{background: var(--rx-dark);}
+.btn-ghost{
+  background: transparent;
+  color: var(--rx-dark);
+  border: 1px solid var(--rx);
+}
+.btn-ghost:hover{background: var(--rx-tint);}
+
+/* ---- Quiz screen ---- */
+.hidden{display:none !important;}
+.topbar{
+  display:flex;
+  align-items:center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.progress-track{
+  flex:1;
+  height: 8px;
+  background: var(--line);
+  border-radius: 4px;
+  overflow:hidden;
+}
+.progress-fill{
+  height: 100%;
+  background: var(--rx);
+  width: 0%;
+  transition: width .25s ease;
+}
+.counter{
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.score-pill{
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--ink);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space:nowrap;
+}
+.chart-num{
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--rx-dark);
+  text-transform:uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.question{
+  font-family: var(--serif);
+  font-size: 20px;
+  line-height: 1.42;
+  color: var(--ink);
+  margin: 0 0 22px;
+}
+.options{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.opt{
+  display:flex;
+  align-items:flex-start;
+  gap: 12px;
+  text-align:left;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  padding: 13px 15px;
+  border-radius: 3px;
+  cursor:pointer;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+  transition: border-color .12s ease, background .12s ease;
+}
+.opt:hover:not(.locked){border-color: var(--rx); background: var(--rx-tint);}
+.opt .letter{
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--rx-dark);
+  border: 1px solid var(--rx);
+  border-radius: 50%;
+  width: 24px; height: 24px;
+  min-width:24px;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 12.5px;
+  background: #fff;
+}
+.opt.locked{cursor: default;}
+.opt.correct{border-color: var(--correct); background: var(--correct-tint);}
+.opt.correct .letter{background: var(--correct); border-color: var(--correct); color:#fff;}
+.opt.wrong{border-color: var(--wrong); background: var(--wrong-tint);}
+.opt.wrong .letter{background: var(--wrong); border-color: var(--wrong); color:#fff;}
+.opt.dim{opacity: .55;}
+
+.feedback{
+  border-left: 3px solid var(--ink);
+  padding: 12px 16px;
+  margin: 6px 0 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  display:none;
+}
+.feedback.show{display:block;}
+.feedback.correct{border-color: var(--correct); background: var(--correct-tint); color:#0f3d24;}
+.feedback.wrong{border-color: var(--wrong); background: var(--wrong-tint); color:#4a1512;}
+.feedback .lead{
+  font-weight: 700;
+  display:block;
+  margin-bottom: 4px;
+  font-family: var(--serif);
+  font-size: 15px;
+}
+
+.navrow{
+  display:flex;
+  justify-content: flex-end;
+}
+
+/* ---- Results screen ---- */
+.results h1{
+  font-family: var(--serif);
+  font-size: 26px;
+  margin: 0 0 4px;
+}
+.big-score{
+  font-family: var(--serif);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--rx-dark);
+  line-height: 1;
+  margin: 14px 0 2px;
+}
+.big-score span{font-size: 22px; color: var(--ink-soft); font-weight: 500;}
+.verdict{
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-bottom: 24px;
+}
+.results-actions{
+  display:flex;
+  gap:10px;
+  margin: 22px 0 6px;
+  flex-wrap: wrap;
+}
+.results-actions .btn{flex:1;}
+.review-list{margin-top: 26px;}
+.review-item{
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+}
+.review-item .rq{
+  font-size: 14.5px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display:flex;
+  gap:8px;
+}
+.review-item .rq .tick{
+  min-width: 18px;
+  font-weight:700;
+}
+.review-item .rq .tick.ok{color:var(--correct);}
+.review-item .rq .tick.no{color:var(--wrong);}
+.review-item .ra{
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  margin: 0 0 4px 26px;
+}
+.review-item .rj{
+  font-size: 13.5px;
+  color: var(--ink);
+  margin: 6px 0 0 26px;
+  background: var(--amber-tint);
+  border-left: 2px solid var(--amber);
+  padding: 8px 10px;
+}
+footer.credit{
+  margin-top: 26px;
+  text-align:center;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+}
+@media (max-width: 480px){
+  .card{padding: 24px 18px;}
+  .question{font-size: 18px;}
+  .big-score{font-size: 44px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="masthead">
+    <div class="rx">℞ Farmacología II<sup>quiz</sup></div>
+    <div class="tag">100 ítems · repaso examen final</div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="card intro" id="screen-intro">
+    <h1>Quiz de repaso — Farmacología II</h1>
+    <p>100 preguntas de opción múltiple, elaboradas sobre los mismos temas del examen final (6º semestre), con casos clínicos y redacción distintos a los del examen original. Cada pregunta tiene una única respuesta correcta y, al responder, se muestra de inmediato una justificación farmacológica.</p>
+    <div class="stat-row">
+      <div class="stat"><span class="num">100</span><span class="label">preguntas objetivas</span></div>
+      <div class="stat"><span class="num">4</span><span class="label">opciones por pregunta</span></div>
+      <div class="stat"><span class="num">1</span><span class="label">justificación por ítem</span></div>
+    </div>
+    <button class="btn btn-primary" id="btn-start">Comenzar el quiz</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="card hidden" id="screen-quiz">
+    <div class="topbar">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="counter" id="counter">1 / 100</div>
+      <div class="score-pill" id="score-pill">Aciertos: 0</div>
+    </div>
+    <div class="chart-num" id="chart-num">CASO CLÍNICO N.° 001</div>
+    <p class="question" id="question-text"></p>
+    <div class="options" id="options-container"></div>
+    <div class="feedback" id="feedback">
+      <span class="lead" id="feedback-lead"></span>
+      <span id="feedback-text"></span>
+    </div>
+    <div class="navrow">
+      <button class="btn btn-primary" id="btn-next" disabled>Siguiente pregunta →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card hidden results" id="screen-results">
+    <h1>Resultado final</h1>
+    <div class="big-score" id="final-score">0<span>/100</span></div>
+    <div class="verdict" id="verdict-text"></div>
+    <div class="results-actions">
+      <button class="btn btn-ghost" id="btn-review">Revisar todas las respuestas</button>
+      <button class="btn btn-primary" id="btn-restart">Repetir el quiz</button>
+    </div>
+    <div class="review-list hidden" id="review-list"></div>
+  </div>
+
+  <footer class="credit">Material de repaso de elaboración propia · no reproduce las preguntas del examen original</footer>
+</div>
+
+<script>
+const QUIZ_DATA = [
+{q:"Paciente con DM2 en tratamiento con glipizida presenta episodio de temblor, sudoración fría y confusión 2 horas después de saltarse el almuerzo. ¿Cuál es la complicación más probable?",o:["Cetoacidosis diabética","Hipoglucemia","Estado hiperosmolar","Acidosis láctica"],a:1,j:"Las sulfonilureas estimulan la secreción de insulina independientemente de la glucemia; si se retrasa u omite una comida, el efecto persiste y produce hipoglucemia."},
+{q:"Mujer de 55 años con DM2 y antecedente personal de pancreatitis inicia tratamiento con liraglutida. ¿Cuál es la principal precaución a considerar?",o:["Riesgo de hepatotoxicidad","Riesgo de recurrencia de pancreatitis aguda","Riesgo de hipoglucemia severa","Riesgo de insuficiencia renal aguda"],a:1,j:"Los agonistas del receptor de GLP-1 se asocian a mayor riesgo de pancreatitis aguda, por lo que deben usarse con precaución en pacientes con este antecedente."},
+{q:"Paciente con DM2 tratado con metformina desarrolla, tras 3 años de uso, parestesias distales y anemia macrocítica. ¿Qué vitamina debe suplementarse?",o:["Ácido fólico","Vitamina B12","Vitamina D","Vitamina B6"],a:1,j:"La metformina interfiere con la absorción ileal de vitamina B12, pudiendo causar deficiencia y anemia megaloblástica con el uso crónico."},
+{q:"Hombre de 68 años con DM2 y TFG de 20 ml/min/1.73m² recibe metformina en su tratamiento habitual. ¿Cuál es la conducta correcta?",o:["Continuar a dosis plena","Reducir la dosis a la mitad","Suspender por riesgo de acidosis láctica","Aumentar la dosis para compensar la falla renal"],a:2,j:"Con TFG menor a 30 ml/min la metformina está contraindicada, ya que su acumulación aumenta el riesgo de acidosis láctica."},
+{q:"Paciente con DM2 en tratamiento con empagliflozina presenta dos episodios de infección urinaria en 6 meses. ¿Cuál es el mecanismo fisiopatológico responsable?",o:["Inmunosupresión directa","Glucosuria que favorece el crecimiento bacteriano","Deshidratación severa","Alteración de la microbiota intestinal"],a:1,j:"Los inhibidores de SGLT2 aumentan la excreción urinaria de glucosa, creando un medio favorable para el crecimiento de microorganismos."},
+{q:"Paciente en tratamiento con canagliflozina presenta dolor abdominal, náuseas y glucemia de 180 mg/dl con cetonemia positiva. ¿Qué complicación debe sospecharse?",o:["Cetoacidosis diabética euglucémica","Estado hiperosmolar","Hipoglucemia","Pancreatitis aguda"],a:0,j:"Los inhibidores de SGLT2 pueden producir cetoacidosis diabética con glucemias no muy elevadas, especialmente en contextos de estrés, cirugía o ayuno."},
+{q:"Hombre con antecedente familiar de carcinoma medular de tiroides desea iniciar tratamiento con un análogo de GLP-1. ¿Cuál es la razón formal para evitar esta clase?",o:["Riesgo demostrado de hipoglucemia severa","Riesgo potencial de tumores de células C de tiroides observado en estudios preclínicos","Interacción con levotiroxina","Riesgo de tiroiditis autoinmune"],a:1,j:"En estudios preclínicos con roedores, los agonistas de GLP-1 se asociaron a tumores de células C tiroideas, por lo que están contraindicados en este antecedente."},
+{q:"Paciente con DM2 en tratamiento con sitagliptina presenta buen control glucémico sin hipoglucemias. ¿Cuál es el mecanismo de acción de este fármaco?",o:["Estimula la secreción pancreática de insulina de forma directa","Inhibe la enzima DPP-4, prolongando la acción de las incretinas endógenas","Bloquea la reabsorción renal de glucosa","Aumenta la sensibilidad periférica a la insulina"],a:1,j:"Los inhibidores de DPP-4 bloquean la degradación de GLP-1 y GIP endógenos, aumentando la secreción de insulina de forma glucosa-dependiente, con bajo riesgo de hipoglucemia."},
+{q:"Mujer con DM2 e insuficiencia cardíaca con fracción de eyección reducida. ¿Cuál de los siguientes hipoglucemiantes está contraindicado por riesgo de retención hídrica?",o:["Metformina","Pioglitazona","Sitagliptina","Insulina"],a:1,j:"Las tiazolidinedionas como la pioglitazona producen retención de sodio y líquidos, pudiendo empeorar la insuficiencia cardíaca."},
+{q:"Paciente embarazada con diabetes gestacional que no logra control con dieta y ejercicio. ¿Cuál es el tratamiento de elección?",o:["Glibenclamida","Metformina en monoterapia","Insulina","Pioglitazona"],a:2,j:"La insulina es de elección en diabetes gestacional al no atravesar la placenta y contar con el perfil de seguridad más establecido en el embarazo."},
+{q:"Hombre de 55 años sin antecedentes toma su primera dosis de enalapril y a los 20 minutos presenta hipotensión sintomática marcada. ¿Cómo se denomina este fenómeno?",o:["Taquifilaxia","Efecto de primera dosis","Fenómeno de rebote","Tolerancia farmacológica"],a:1,j:"Los IECA pueden producir hipotensión marcada tras la primera dosis, sobre todo en pacientes con depleción de volumen o activación importante del sistema renina-angiotensina."},
+{q:"Paciente en tratamiento crónico con losartán presenta hiperpotasemia leve en control de laboratorio. ¿Cuál es el mecanismo más probable?",o:["Aumento de la secreción de aldosterona","Disminución de la secreción de aldosterona por bloqueo del receptor AT1","Bloqueo directo de canales de potasio renales","Nefrotoxicidad directa"],a:1,j:"Los ARA II bloquean el receptor AT1, reduciendo la liberación de aldosterona y favoreciendo la retención de potasio."},
+{q:"Un paciente asmático es tratado por error con propranolol para su hipertensión y desarrolla broncoespasmo agudo. ¿Cuál es el mecanismo?",o:["Bloqueo de receptores alfa-1 bronquiales","Bloqueo no selectivo de receptores beta-2 bronquiales","Estimulación vagal directa","Liberación de histamina"],a:1,j:"Los betabloqueadores no selectivos bloquean también receptores beta-2 bronquiales, pudiendo desencadenar broncoespasmo en pacientes asmáticos."},
+{q:"Paciente hipertenso tratado con atenolol refiere fatiga y bradicardia sinusal de 48 lpm. ¿Cuál es el mecanismo?",o:["Bloqueo de receptores beta-1 cardíacos, con disminución de la frecuencia y contractilidad","Bloqueo de canales de calcio","Inhibición de la enzima convertidora de angiotensina","Vasodilatación arteriolar directa"],a:0,j:"El bloqueo de receptores beta-1 reduce la frecuencia cardíaca y la contractilidad, explicando la bradicardia y la fatiga."},
+{q:"Mujer embarazada de 30 semanas con hipertensión gestacional inicia metildopa y refiere somnolencia marcada. ¿Cuál es el mecanismo de acción antihipertensivo de este fármaco?",o:["Bloqueo de receptores beta","Estimulación de receptores alfa-2 centrales, actuando como falso neurotransmisor","Inhibición de la ECA","Bloqueo de canales de calcio"],a:1,j:"La metildopa se convierte en alfa-metilnoradrenalina, que estimula receptores alfa-2 centrales reduciendo el tono simpático; es de elección en el embarazo."},
+{q:"Hombre hipertenso tratado con verapamilo por varios meses refiere estreñimiento persistente. ¿Cuál es el mecanismo?",o:["Bloqueo de canales de calcio en musculatura lisa intestinal, reduciendo la motilidad","Deshidratación por efecto diurético","Neuropatía autonómica inducida por el fármaco","Interacción con la flora intestinal"],a:0,j:"El verapamilo bloquea canales de calcio también en el músculo liso intestinal, reduciendo la motilidad y favoreciendo el estreñimiento."},
+{q:"Paciente hipertensa tratada con hidroclorotiazida presenta hiperglucemia leve, hiperuricemia e hipopotasemia. ¿Cuál es el mecanismo común de estas alteraciones?",o:["Inhibición del cotransportador Na+/Cl- en el túbulo distal","Inhibición de la anhidrasa carbónica","Bloqueo del cotransportador Na+/K+/2Cl-","Antagonismo de receptores mineralocorticoides"],a:0,j:"Este es el mecanismo de las tiazidas, que explica la hipopotasemia, la hiperuricemia y la hiperglucemia asociadas a su uso."},
+{q:"Un paciente en tratamiento con dosis altas de furosemida intravenosa desarrolla tinnitus y disminución transitoria de la audición. ¿Cuál es este efecto adverso?",o:["Neurotoxicidad central","Ototoxicidad","Nefrotoxicidad directa","Neuropatía del VIII par por hipopotasemia"],a:1,j:"Los diuréticos de asa en dosis altas o administración IV rápida pueden alterar la homeostasis iónica de la endolinfa, causando ototoxicidad reversible."},
+{q:"Paciente con cirrosis y ascitis en tratamiento con espironolactona desarrolla hiperpotasemia. ¿Cuál es el mecanismo?",o:["Inhibición de la anhidrasa carbónica","Antagonismo de receptores de aldosterona en el túbulo colector","Bloqueo del cotransportador Na+/Cl-","Efecto osmótico directo"],a:1,j:"La espironolactona bloquea receptores mineralocorticoides, reduciendo la excreción de potasio y produciendo hiperpotasemia."},
+{q:"Paciente con glaucoma de ángulo abierto en tratamiento con acetazolamida presenta acidosis metabólica hiperclorémica. ¿Cuál es el mecanismo?",o:["Pérdida renal de bicarbonato por inhibición de la anhidrasa carbónica","Pérdida gastrointestinal de bicarbonato","Producción de ácido láctico","Retención de cloro por vasoconstricción renal"],a:0,j:"La acetazolamida inhibe la anhidrasa carbónica renal, aumentando la excreción de bicarbonato y produciendo acidosis metabólica hiperclorémica."},
+{q:"Paciente con edema cerebral postraumático recibe manitol intravenoso. ¿Por qué está contraindicado en insuficiencia cardíaca descompensada?",o:["Porque produce hipopotasemia severa","Porque expande transitoriamente el volumen intravascular, pudiendo precipitar edema pulmonar","Porque provoca vasoconstricción coronaria","Porque interactúa con digoxina"],a:1,j:"El manitol atrae agua hacia el espacio vascular; en pacientes con insuficiencia cardíaca descompensada puede precipitar edema agudo de pulmón."},
+{q:"Hombre con HPB inicia tamsulosina y refiere eyaculación retrógrada como efecto adverso. ¿Cuál es el mecanismo?",o:["Bloqueo de receptores alfa-1A en el cuello vesical y conductos eyaculadores","Reducción de dihidrotestosterona","Bloqueo de receptores muscarínicos","Efecto antiandrogénico directo"],a:0,j:"El bloqueo de receptores alfa-1A en el cuello vesical y los conductos eyaculadores explica la eyaculación retrógrada asociada a tamsulosina."},
+{q:"Hombre de 60 años con HPB e hipertensión no controlada. Su médico elige doxazosina en lugar de tamsulosina. ¿Cuál es la razón?",o:["Doxazosina tiene mayor selectividad prostática","Doxazosina bloquea también receptores alfa-1B vasculares, aportando efecto antihipertensivo","Doxazosina no causa hipotensión ortostática","Doxazosina reduce el tamaño prostático"],a:1,j:"Por su menor selectividad, doxazosina bloquea también receptores alfa-1B vasculares, aportando un beneficio antihipertensivo además del urológico."},
+{q:"Paciente en tratamiento con dutasterida por HPB refiere disminución del volumen eyaculado y de la libido. ¿Cuál es el mecanismo?",o:["Bloqueo de receptores alfa-1","Inhibición de ambas isoenzimas de 5-alfa reductasa, reduciendo la DHT","Bloqueo de receptores de andrógenos","Aumento de la producción de estrógenos"],a:1,j:"Dutasterida inhibe las isoenzimas tipo I y II de la 5-alfa reductasa, reduciendo de forma más marcada la dihidrotestosterona que finasterida."},
+{q:"Hombre de 30 años sano consulta por eyaculación precoz de toda la vida. Su médico prescribe un fármaco de acción corta, similar mecanísticamente a un ISRS, tomado según necesidad. ¿Qué fármaco es?",o:["Sildenafil","Tamsulosina","Dapoxetina","Finasterida"],a:2,j:"La dapoxetina es un ISRS de acción ultracorta aprobado específicamente para la eyaculación precoz, tomado a demanda antes del coito."},
+{q:"Paciente con disfunción eréctil recibe sildenafil. El médico le advierte sobre la combinación con qué grupo de fármacos por riesgo de hipotensión grave.",o:["Betabloqueadores","Nitratos","IECA","Diuréticos tiazídicos"],a:1,j:"La combinación de inhibidores de PDE5 con nitratos potencia el efecto vasodilatador por acumulación de GMPc, causando hipotensión severa potencialmente mortal."},
+{q:"Niño asmático usa salbutamol inhalado y presenta temblor fino de manos y taquicardia leve tras cada inhalación. ¿Cuál es el mecanismo?",o:["Estimulación cruzada de receptores beta-1 cardíacos","Bloqueo de receptores muscarínicos","Liberación de histamina","Estimulación de receptores alfa-1"],a:0,j:"A dosis altas o en pacientes sensibles, los beta-2 agonistas pueden estimular también receptores beta-1 cardíacos, causando taquicardia y temblor."},
+{q:"Paciente con EPOC usa formoterol de forma regular y presenta hipopotasemia leve en control de laboratorio. ¿Cuál es el mecanismo?",o:["Pérdida renal directa de potasio","Desplazamiento intracelular de potasio mediado por estimulación beta-2","Diarrea inducida por el fármaco","Aumento de la aldosterona"],a:1,j:"Los beta-2 agonistas activan la bomba Na+/K+-ATPasa, desplazando potasio al interior celular y causando hipopotasemia transitoria."},
+{q:"Paciente con EPOC en tratamiento crónico con tiotropio inhalado refiere sequedad bucal y ocasional visión borrosa. ¿Cuál es el mecanismo?",o:["Bloqueo de receptores muscarínicos en glándulas exocrinas y músculo ciliar","Estimulación simpática","Efecto directo irritante de la vía inhalatoria","Deshidratación sistémica"],a:0,j:"Los anticolinérgicos inhalados reducen la secreción salival y pueden alterar la acomodación visual al bloquear receptores muscarínicos."},
+{q:"Adolescente con asma inducida por ejercicio recibe montelukast como tratamiento adyuvante. ¿Cuál es su mecanismo de acción?",o:["Agonismo de receptores beta-2","Antagonismo de receptores de leucotrienos cisteinílicos","Inhibición de fosfodiesterasa","Estabilización de la membrana de mastocitos"],a:1,j:"Montelukast bloquea los receptores CysLT1, reduciendo la broncoconstricción y la inflamación mediada por leucotrienos."},
+{q:"Paciente con EPOC severo tratado con teofilina presenta náuseas, temblor y una arritmia supraventricular. ¿Cuál es la explicación más probable?",o:["Interacción con salbutamol","Estrecho margen terapéutico del fármaco, con niveles séricos elevados","Efecto idiosincrático raro","Hipopotasemia previa"],a:1,j:"La teofilina tiene una ventana terapéutica estrecha; niveles séricos elevados producen toxicidad gastrointestinal, neurológica y arritmias."},
+{q:"Paciente oncológico en quimioterapia recibe metoclopramida como antiemético y desarrolla movimientos distónicos agudos del cuello. ¿Cuál es el mecanismo?",o:["Bloqueo de receptores D2 centrales","Bloqueo de receptores 5-HT3","Estimulación colinérgica central","Bloqueo de receptores H1"],a:0,j:"La metoclopramida atraviesa la barrera hematoencefálica y bloquea receptores D2 en los núcleos basales, produciendo reacciones extrapiramidales agudas."},
+{q:"Paciente con gastroparesia diabética recibe domperidona en lugar de metoclopramida por menor riesgo de efectos extrapiramidales. ¿Cuál es la razón farmacocinética?",o:["Menor afinidad por receptores D2","Escasa penetración de la barrera hematoencefálica","Vida media más corta","Metabolismo exclusivamente renal"],a:1,j:"La domperidona actúa principalmente sobre receptores D2 periféricos, con menor riesgo de efectos extrapiramidales centrales."},
+{q:"Paciente en quimioterapia con ondansetrón que además toma paroxetina para depresión. ¿Qué complicación debe vigilarse por el uso combinado?",o:["Hipoglucemia grave por interacción","Síndrome serotoninérgico","Bloqueo AV completo","Hipertensión severa"],a:1,j:"El ondansetrón, con actividad serotoninérgica vía 5-HT3, combinado con ISRS puede aumentar el riesgo de síndrome serotoninérgico."},
+{q:"Paciente con distensión abdominal y gases recibe simeticona. ¿Cuál es su mecanismo de acción?",o:["Inhibe la producción bacteriana de gas","Actúa como agente antiespumante, reduciendo la tensión superficial de las burbujas de gas","Estimula el peristaltismo colónico","Actúa como antibiótico intestinal"],a:1,j:"La simeticona reduce la tensión superficial de las burbujas de gas, facilitando su coalescencia y eliminación, sin efecto antibacteriano."},
+{q:"Paciente postquirúrgico recibe morfina para el dolor y presenta acumulación de secreciones bronquiales con tos inefectiva. ¿Cuál es el mecanismo?",o:["Aumento de la producción de moco","Supresión del reflejo tusígeno mediada por receptores opioides mu","Broncoconstricción directa","Sedación excesiva únicamente"],a:1,j:"La morfina deprime el centro de la tos mediante receptores opioides mu, favoreciendo la retención de secreciones bronquiales."},
+{q:"Paciente con tos seca leve posterior a un cuadro viral recibe dextrometorfano. ¿Cuál es su mecanismo de acción?",o:["Activación de receptores opioides mu con efecto analgésico asociado","Supresión del centro bulbar de la tos sin actividad analgésica relevante","Antihistamínico H1 con efecto sedante","Inhibición de la anhidrasa carbónica"],a:1,j:"El dextrometorfano suprime el centro bulbar de la tos, pero carece de actividad opioide analgésica significativa a dosis terapéuticas."},
+{q:"Paciente con fracturas costales y tos dolorosa recibe codeína. ¿Cuál es la ventaja de este fármaco frente al dextrometorfano en este caso?",o:["Mayor potencia antitusígena únicamente","Efecto analgésico asociado por acción sobre receptores opioides mu","Ausencia de riesgo de depresión respiratoria","No genera estreñimiento"],a:1,j:"La codeína, al ser un opioide, ofrece supresión de la tos y analgesia simultáneamente, útil en dolor por fracturas costales con tos."},
+{q:"Paciente con gota aguda en la primera articulación metatarsofalángica recibe colchicina dentro de las primeras 24 horas. ¿Cuál es el mecanismo antiinflamatorio del fármaco?",o:["Inhibición de la síntesis de ácido úrico","Inhibición de la polimerización de microtúbulos, reduciendo la migración de neutrófilos","Inhibición de la xantina oxidasa","Bloqueo de receptores de prostaglandinas"],a:1,j:"La colchicina no altera el metabolismo del ácido úrico; actúa impidiendo la migración y activación de neutrófilos en la articulación."},
+{q:"Paciente con hiperuricemia crónica y tofos inicia alopurinol. ¿Cuál es su mecanismo de acción?",o:["Aumenta la excreción renal de ácido úrico","Inhibe la xantina oxidasa, reduciendo la síntesis de ácido úrico","Inhibe la reabsorción tubular de urato","Bloquea receptores de interleucina-1"],a:1,j:"El alopurinol inhibe la xantina oxidasa, reduciendo la conversión de purinas en ácido úrico."},
+{q:"Paciente con crisis aguda de gota inicia alopurinol de forma simultánea sin cobertura antiinflamatoria. ¿Qué puede ocurrir?",o:["Resolución más rápida del ataque","Posible prolongación o empeoramiento transitorio de la crisis aguda","Reducción inmediata del dolor","Ningún efecto sobre la crisis"],a:1,j:"Iniciar alopurinol durante un ataque agudo puede movilizar depósitos de urato y prolongar la inflamación articular."},
+{q:"Paciente con rinitis alérgica usa oximetazolina nasal por más de 10 días y refiere empeoramiento de la congestión al suspenderla. ¿Cómo se denomina este cuadro?",o:["Taquifilaxia sistémica","Rinitis medicamentosa","Rinitis atrófica","Efecto rebote alérgico"],a:1,j:"El uso prolongado de descongestionantes tópicos produce taquifilaxia y congestión de rebote al suspenderlos, cuadro conocido como rinitis medicamentosa."},
+{q:"Paciente hipertenso con cardiopatía isquémica usa nafazolina nasal para un resfriado común. ¿Cuál es el riesgo principal?",o:["Broncoespasmo","Elevación de la presión arterial y empeoramiento de la isquemia por vasoconstricción sistémica","Hipoglucemia","Retención urinaria"],a:1,j:"La absorción sistémica de vasoconstrictores nasales puede elevar la presión arterial y comprometer la perfusión coronaria en pacientes de riesgo."},
+{q:"Paciente en tratamiento crónico con omeprazol por más de 5 años presenta una fractura de cadera de baja energía. ¿Cuál es la relación fisiopatológica propuesta?",o:["Ninguna relación descrita","Posible reducción de la absorción de calcio y alteración de la remodelación ósea","Toxicidad ósea directa","Hipocalcemia aguda severa"],a:1,j:"La supresión ácida prolongada por IBP se ha asociado a menor absorción de calcio y mayor riesgo de fracturas."},
+{q:"Paciente hospitalizado con neumonía y antecedente de uso crónico de lansoprazol. ¿Qué asociación se ha descrito con el uso prolongado de IBP?",o:["Mayor riesgo de infecciones respiratorias y entéricas por alteración del pH gástrico","Ninguna asociación","Protección completa contra infecciones","Reducción del riesgo de neumonía"],a:0,j:"La hipoclorhidria prolongada favorece la colonización bacteriana, aumentando el riesgo de neumonía y de infección entérica por C. difficile."},
+{q:"Paciente con DM2 e IMC de 34 en tratamiento con semaglutida. ¿Cuál es un beneficio adicional de este fármaco más allá del control glucémico?",o:["Aumento de peso","Pérdida de peso significativa por retraso del vaciamiento gástrico y efecto central sobre el apetito","Aumento del apetito","Retención de líquidos"],a:1,j:"Los agonistas de GLP-1 retrasan el vaciamiento gástrico y actúan sobre centros hipotalámicos de saciedad, produciendo pérdida de peso relevante."},
+{q:"Paciente con DM2 y enfermedad cardiovascular establecida en tratamiento con empagliflozina. ¿Qué beneficio adicional respalda la evidencia clínica actual?",o:["Reducción de hospitalizaciones por insuficiencia cardíaca","Aumento del riesgo cardiovascular","Mayor riesgo de infarto","Sin beneficio cardiovascular demostrado"],a:0,j:"Los inhibidores de SGLT2 han demostrado beneficio cardiovascular y renal, incluyendo reducción de hospitalizaciones por insuficiencia cardíaca."},
+{q:"Hombre de 50 años con DM2 en monoterapia con metformina desarrolla intolerancia gastrointestinal marcada. ¿Cuál es la conducta más adecuada?",o:["Suspender definitivamente la metformina","Usar formulación de liberación prolongada y ajustar titulación","Duplicar la dosis","Asociar directamente insulina"],a:1,j:"Ajustar la formulación y la titulación reduce significativamente la intolerancia gastrointestinal a la metformina, sin necesidad de suspenderla."},
+{q:"Paciente hipertenso con antecedente de angioedema por IECA. ¿Cuál es la conducta más segura al elegir un nuevo antihipertensivo?",o:["Reiniciar el mismo IECA a menor dosis","Evitar IECA y considerar otro grupo farmacológico, valorando ARA II con precaución","Usar un IECA diferente sin problema","Usar aliskiren sin restricciones"],a:1,j:"Ante angioedema por IECA se debe evitar la reexposición al grupo por riesgo de recurrencia, valorando alternativas con precaución."},
+{q:"Paciente con hipertensión resistente en tratamiento con tres fármacos que incluye un IECA. El médico decide NO asociar un ARA II. ¿Por qué?",o:["Porque no existe riesgo alguno con la combinación","Por mayor riesgo de hiperpotasemia y deterioro renal con el bloqueo dual del sistema renina-angiotensina","Porque reduce la eficacia antihipertensiva","Porque genera taquicardia refleja"],a:1,j:"Combinar IECA y ARA II no aporta beneficio adicional relevante y aumenta el riesgo de hiperpotasemia e insuficiencia renal."},
+{q:"Mujer de 45 años con hipertensión e hiperaldosteronismo primario confirmado. ¿Cuál es el tratamiento farmacológico más específico?",o:["Amlodipino","Espironolactona","Furosemida","Hidroclorotiazida"],a:1,j:"La espironolactona antagoniza directamente el exceso de mineralocorticoides, siendo el antihipertensivo más específico en este contexto."},
+{q:"Paciente con fibrilación auricular e hipertensión, sin insuficiencia cardíaca, recibe verapamilo. ¿Cuál es el beneficio principal en este contexto?",o:["Efecto anticoagulante directo","Control de la frecuencia ventricular","Reversión a ritmo sinusal","Prevención de trombos auriculares"],a:1,j:"Al enlentecer la conducción en el nodo AV, el verapamilo es útil para el control de la frecuencia ventricular en fibrilación auricular."},
+{q:"Paciente con insuficiencia cardíaca con fracción de eyección reducida y fibrilación auricular. ¿Por qué está contraindicado el verapamilo en este contexto?",o:["Por su efecto inotrópico negativo, que puede empeorar la función ventricular","Por causar taquicardia refleja","Por interactuar letalmente con la digoxina","Por causar hipopotasemia severa"],a:0,j:"Los antagonistas de calcio no dihidropiridínicos deprimen la contractilidad, estando contraindicados en insuficiencia cardíaca con FEVI reducida."},
+{q:"Hombre joven caucásico con hipertensión leve sin comorbilidades que no responde a cambios en el estilo de vida. ¿Cuál sería una opción razonable de primera línea?",o:["Un IECA o un bloqueador de canales de calcio","Un betabloqueador siempre como primera elección","Un diurético de asa","Un alfa bloqueador como monoterapia inicial"],a:0,j:"En hipertensión no complicada, IECA/ARA II o bloqueadores de canales de calcio son opciones habituales de primera línea."},
+{q:"Paciente diabético tipo 1 en tratamiento con insulina que además recibe propranolol no selectivo por temblor esencial. ¿Qué advertencia debe recibir?",o:["El fármaco puede enmascarar los síntomas adrenérgicos de la hipoglucemia","El fármaco cura el temblor y la diabetes simultáneamente","No existe ninguna interacción relevante","El fármaco reduce el riesgo de hipoglucemia"],a:0,j:"Los betabloqueadores no selectivos bloquean la respuesta adrenérgica (taquicardia, temblor) que alerta sobre la hipoglucemia, retrasando su reconocimiento."},
+{q:"Paciente hipertensa de 60 años con osteoporosis. ¿Qué diurético podría ofrecer un beneficio adicional sobre la densidad mineral ósea?",o:["Furosemida","Hidroclorotiazida","Manitol","Acetazolamida"],a:1,j:"Las tiazidas reducen la excreción urinaria de calcio, lo que puede ofrecer un efecto favorable sobre la densidad mineral ósea."},
+{q:"Mujer con síndrome de ovario poliquístico e hirsutismo recibe espironolactona. ¿Cuál es el mecanismo que explica este uso no diurético?",o:["Antagonismo de receptores androgénicos periféricos","Estimulación de la aromatasa ovárica","Inhibición exclusiva de la 5-alfa reductasa","Activación de receptores de estrógeno"],a:0,j:"La espironolactona bloquea receptores de andrógenos en la piel y el folículo piloso, siendo útil en el manejo del hirsutismo."},
+{q:"Paciente con edema agudo de pulmón por insuficiencia cardíaca descompensada recibe furosemida intravenosa. ¿Cuál es su mecanismo de acción?",o:["Inhibición del cotransportador Na+/Cl- en el túbulo distal","Inhibición del cotransportador Na+/K+/2Cl- en el asa ascendente gruesa de Henle","Inhibición de la anhidrasa carbónica","Antagonismo de la aldosterona"],a:1,j:"Este es el mecanismo de los diuréticos de asa, responsable de su rápido y potente efecto natriurético en el edema agudo de pulmón."},
+{q:"Paciente en tratamiento prolongado con espironolactona por insuficiencia cardíaca refiere ginecomastia dolorosa. ¿Cuál es el mecanismo?",o:["Actividad antiandrogénica y progestágena del fármaco","Aumento de estrógenos exógenos","Hiperprolactinemia directa","Hipertiroidismo inducido"],a:0,j:"La espironolactona, por su estructura esteroidea, puede producir ginecomastia por actividad antiandrogénica y progestágena."},
+{q:"Paciente con traumatismo craneoencefálico grave y signos de hipertensión intracraneal recibe manitol intravenoso. ¿Cuál es el mecanismo por el que reduce la presión intracraneal?",o:["Vasodilatación cerebral","Efecto osmótico que extrae agua del tejido cerebral hacia el espacio vascular","Bloqueo de canales de calcio cerebrales","Inhibición directa de la producción de líquido cefalorraquídeo"],a:1,j:"El manitol aumenta la osmolaridad plasmática, generando un gradiente que retira agua del parénquima cerebral hacia el compartimento vascular."},
+{q:"Un paciente con gota aguda recibe colchicina en las primeras horas del ataque. ¿Cuál es el mecanismo por el cual mejora los síntomas?",o:["Reduce la producción hepática de ácido úrico","Inhibe la formación de microtúbulos, reduciendo la quimiotaxis y activación de neutrófilos","Bloquea los receptores de IL-1 directamente","Aumenta la excreción renal de urato"],a:1,j:"La colchicina no altera el metabolismo del ácido úrico; su efecto es antiinflamatorio, al impedir la migración y activación de neutrófilos."},
+{q:"Un paciente con tofos gotosos crónicos en tratamiento estable con alopurinol pregunta por qué debe mantenerlo de forma indefinida. ¿Cuál es la explicación correcta?",o:["Porque cura la enfermedad de forma definitiva en pocas semanas","Porque mantiene baja la producción de ácido úrico al inhibir la xantina oxidasa, previniendo nuevas crisis","Porque actúa como antiinflamatorio articular directo","Porque aumenta la excreción renal de urato"],a:1,j:"El alopurinol reduce de forma sostenida la síntesis de ácido úrico, lo que previene nuevas crisis y favorece la reducción de los tofos con el tiempo."},
+{q:"Un paciente cursando una crisis aguda de gota pregunta si puede iniciar alopurinol de inmediato para \"curarse más rápido\". ¿Qué debe explicarle el médico?",o:["Que se debe iniciar de inmediato porque acelera la resolución del ataque","Que iniciarlo durante la crisis aguda puede prolongarla o empeorarla, por lo que se recomienda esperar a que se resuelva el episodio","Que el alopurinol tiene efecto analgésico inmediato","Que debe suspender definitivamente cualquier tratamiento hipouricemiante"],a:1,j:"Iniciar alopurinol durante la crisis aguda puede movilizar depósitos de urato y prolongar la inflamación; se recomienda iniciarlo tras resolver el episodio."},
+{q:"Una paciente usa gotas nasales de oximetazolina a diario durante varias semanas para su congestión y progresivamente necesita usarlas con mayor frecuencia. ¿Cómo se explica este fenómeno?",o:["Alergia adquirida al principio activo","Rinitis medicamentosa por taquifilaxia de los receptores alfa-adrenérgicos con congestión de rebote","Infección bacteriana sobreagregada","Efecto tóxico irreversible sobre la mucosa nasal"],a:1,j:"El uso continuo de vasoconstrictores nasales produce taquifilaxia de los receptores alfa-adrenérgicos, generando congestión de rebote (rinitis medicamentosa)."},
+{q:"Un paciente con antecedente de enfermedad coronaria usa nafazolina nasal para un resfriado y refiere palpitaciones y elevación de la presión arterial. ¿Cuál es la explicación farmacológica?",o:["El fármaco no tiene absorción sistémica relevante","La absorción sistémica del vasoconstrictor puede elevar la presión arterial y aumentar la demanda miocárdica de oxígeno","Es un efecto psicológico sin base farmacológica","Se debe a una reacción alérgica cruzada"],a:1,j:"Los vasoconstrictores nasales tienen absorción sistémica relevante y pueden elevar la presión arterial, aumentando el riesgo isquémico en pacientes coronarios."},
+{q:"Un paciente con uso crónico de un inhibidor de la bomba de protones por más de 5 años sufre una fractura de cadera tras una caída de baja energía. ¿Qué mecanismo podría explicar esta asociación?",o:["Ningún mecanismo plausible; es coincidencia","La supresión ácida prolongada puede reducir la absorción de calcio y alterar la remodelación ósea","El fármaco produce toxicidad ósea directa e inmediata","El fármaco causa hipocalcemia aguda severa"],a:1,j:"La hipoclorhidria mantenida reduce la absorción intestinal de calcio y se ha asociado a alteraciones en la remodelación ósea y mayor riesgo de fractura."},
+{q:"Un paciente hospitalizado con neumonía adquirida en la comunidad tiene antecedente de uso prolongado de un IBP. ¿Qué relación se ha descrito entre ambos hechos?",o:["El uso prolongado de IBP reduce el riesgo de infecciones respiratorias","La hipoclorhidria prolongada favorece la colonización bacteriana y se ha asociado a mayor riesgo de neumonía e infección entérica por C. difficile","No existe ninguna asociación descrita","El IBP mejora la inmunidad de la mucosa respiratoria"],a:1,j:"La disminución sostenida de la acidez gástrica favorece la colonización bacteriana de la vía aérea superior y del tubo digestivo."},
+{q:"Un paciente con gastroparesia recibe metoclopramida y, tras varias dosis, presenta movimientos involuntarios del cuello y rigidez. ¿A qué se debe este cuadro?",o:["Estimulación de receptores 5-HT3","Bloqueo de receptores D2 a nivel central, produciendo una reacción extrapiramidal aguda","Hipopotasemia inducida por el fármaco","Efecto anticolinérgico central"],a:1,j:"La metoclopramida bloquea receptores D2 centrales; en algunos pacientes esto desencadena reacciones extrapiramidales agudas como la distonía."},
+{q:"Se prefiere domperidona sobre metoclopramida en un paciente con enfermedad de Parkinson que requiere un procinético. ¿Cuál es la razón principal?",o:["La domperidona penetra poco la barrera hematoencefálica, con menor riesgo de empeorar los síntomas extrapiramidales","La domperidona tiene mayor potencia antiemética","La domperidona no tiene ningún efecto cardíaco","La domperidona actúa sobre receptores opioides"],a:0,j:"Al penetrar poco la barrera hematoencefálica, la domperidona actúa preferentemente en receptores D2 periféricos, con menor riesgo de empeorar el parkinsonismo."},
+{q:"Un paciente oncológico en quimioterapia usa ondansetrón y simultáneamente toma sertralina para depresión. ¿Qué complicación debe vigilarse especialmente?",o:["Hipoglucemia grave","Síndrome serotoninérgico y prolongación del intervalo QT","Bloqueo AV completo inmediato","Reducción total de la eficacia del antiemético"],a:1,j:"La combinación de un antagonista 5-HT3 con un ISRS aumenta el riesgo de síndrome serotoninérgico, además del riesgo conocido de prolongación del QT."},
+{q:"Un paciente con distensión abdominal por gases pregunta cómo actúa la simeticona que le recetaron. ¿Cuál es la respuesta correcta?",o:["Mata las bacterias productoras de gas en el intestino","Actúa como agente antiespumante, disminuyendo la tensión superficial de las burbujas de gas y facilitando su eliminación","Acelera directamente el tránsito intestinal","Inhibe la fermentación bacteriana por acción antibiótica"],a:1,j:"La simeticona no tiene acción antibacteriana; actúa físicamente reduciendo la tensión superficial de las burbujas de gas."},
+{q:"Un paciente con tos seca leve tras un cuadro viral recibe dextrometorfano y pregunta si este fármaco también le ayudará con el dolor muscular que tiene. ¿Qué debe responder el médico?",o:["Sí, tiene un potente efecto analgésico central","No, carece de actividad analgésica relevante; solo actúa suprimiendo el centro bulbar de la tos","Sí, porque es un opioide puro","No, porque no tiene ningún efecto sobre el sistema nervioso central"],a:1,j:"El dextrometorfano suprime el reflejo tusígeno a nivel central pero no posee actividad analgésica relevante a dosis terapéuticas."},
+{q:"Un paciente con tos intensa y dolorosa por fracturas costales recibe codeína en lugar de dextrometorfano. ¿Cuál es la principal ventaja clínica de esta elección?",o:["La codeína no tiene riesgo de depresión respiratoria","La codeína, al activar receptores opioides mu, aporta un efecto analgésico asociado útil en este contexto doloroso","La codeína no produce estreñimiento","La codeína tiene menor potencial antitusígeno"],a:1,j:"Al ser un opioide, la codeína suprime la tos y además proporciona analgesia, beneficio relevante en el dolor asociado a fracturas costales."},
+{q:"Un paciente postoperatorio recibe morfina para el dolor y, días después, presenta acumulación de secreciones bronquiales y tos poco eficaz. ¿Cuál es la explicación?",o:["La morfina aumenta la producción de moco bronquial","La morfina suprime el reflejo tusígeno mediado por receptores opioides mu, dificultando la eliminación de secreciones","La morfina produce broncoconstricción directa","La morfina causa una infección respiratoria directa"],a:1,j:"La supresión del reflejo tusígeno por los opioides dificulta la eliminación de secreciones, favoreciendo su acumulación."},
+{q:"Un paciente hipertenso en tratamiento con furosemida presenta en control de laboratorio hipopotasemia e hipocalcemia leve. ¿Cuál es el mecanismo que mejor explica ambos hallazgos?",o:["Inhibición del cotransportador Na+/Cl- en el túbulo distal","Inhibición del cotransportador Na+/K+/2Cl- en el asa ascendente de Henle, con pérdida asociada de calcio","Antagonismo de la aldosterona","Inhibición de la anhidrasa carbónica"],a:1,j:"Al inhibir el cotransportador Na+/K+/2Cl- se pierde el gradiente que favorece la reabsorción paracelular de calcio, produciendo hipocalcemia junto a la hipopotasemia."},
+{q:"Un paciente en tratamiento con hidroclorotiazida presenta, en controles sucesivos, elevación leve de la glucemia y del ácido úrico. ¿Qué mecanismo explica ambos efectos?",o:["Inhibición del cotransportador Na+/K+/2Cl-","Inhibición del cotransportador Na+/Cl- en el túbulo contorneado distal, con alteraciones metabólicas asociadas","Antagonismo de receptores mineralocorticoides","Inhibición de la anhidrasa carbónica"],a:1,j:"Las tiazidas, mediante este mecanismo, se asocian clásicamente a hiperglucemia e hiperuricemia como efectos metabólicos adversos."},
+{q:"Un paciente varón en tratamiento prolongado con espironolactona por insuficiencia cardíaca desarrolla ginecomastia dolorosa. ¿Cuál es el mecanismo?",o:["Actividad antiandrogénica y progestágena de la espironolactona sobre receptores hormonales","Aumento de la producción de testosterona","Hiperprolactinemia por bloqueo dopaminérgico","Hipertiroidismo secundario"],a:0,j:"La estructura esteroidea de la espironolactona le confiere actividad antiandrogénica y progestágena, causando ginecomastia con el uso prolongado."},
+{q:"Un paciente con glaucoma de ángulo abierto en tratamiento oral con acetazolamida presenta parestesias en manos y pies. ¿Cuál es la explicación más probable?",o:["Hipopotasemia severa","Acidosis metabólica hiperclorémica por pérdida renal de bicarbonato","Hiperglucemia inducida","Neuropatía periférica irreversible"],a:1,j:"La acidosis metabólica hiperclorémica producida por la acetazolamida puede manifestarse con parestesias como síntoma característico."},
+{q:"Un paciente con edema cerebral secundario a un traumatismo craneoencefálico recibe manitol intravenoso, pero el equipo médico decide contraindicarlo al detectar signos de insuficiencia cardíaca descompensada. ¿Por qué?",o:["Porque el manitol produce hiperpotasemia grave","Porque el manitol expande transitoriamente el volumen intravascular, pudiendo precipitar edema pulmonar","Porque el manitol interactúa letalmente con la furosemida","Porque el manitol no tiene ningún efecto en el sistema nervioso central"],a:1,j:"El efecto osmótico del manitol expande el volumen intravascular de forma transitoria, lo que puede descompensar aún más una insuficiencia cardíaca."},
+{q:"Un paciente con enfermedad renal crónica avanzada pregunta por qué su médico evita los diuréticos osmóticos como el manitol en su caso. ¿Cuál es la razón principal?",o:["Porque no tienen ningún efecto diurético en la insuficiencia renal","Porque dependen de una adecuada función renal para ser excretados y ejercer su efecto, pudiendo acumularse y causar sobrecarga de volumen","Porque siempre producen hipoglucemia","Porque están formulados exclusivamente para uso oftálmico"],a:1,j:"Los diuréticos osmóticos requieren filtración glomerular adecuada para actuar; en la ERC avanzada pueden acumularse y sobrecargar el volumen intravascular."},
+{q:"Un paciente en tratamiento con un análogo de GLP-1 semanal presenta dolor abdominal intenso irradiado a la espalda, con elevación marcada de amilasa y lipasa. ¿Cuál de los siguientes fármacos es más probable que esté implicado?",o:["Metformina","Semaglutida","Sitagliptina","Glibenclamida"],a:1,j:"Los agonistas de GLP-1, como la semaglutida, se asocian a mayor riesgo de pancreatitis aguda; el cuadro descrito es característico de este efecto adverso."},
+{q:"Una mujer con DM2 tratada crónicamente presenta anemia macrocítica y parestesias distales. ¿Cuál de los siguientes fármacos es la causa más probable?",o:["Metformina","Empagliflozina","Glibenclamida","Pioglitazona"],a:0,j:"La metformina interfiere con la absorción de vitamina B12, pudiendo causar anemia megaloblástica y neuropatía con el uso prolongado."},
+{q:"Un hombre con antecedente familiar de carcinoma medular de tiroides desea iniciar un hipoglucemiante inyectable semanal. ¿Cuál de los siguientes está formalmente contraindicado en su caso?",o:["Insulina","Un agonista del receptor de GLP-1","Metformina","Un inhibidor de SGLT2"],a:1,j:"Los agonistas de GLP-1 se asociaron a tumores de células C tiroideas en estudios preclínicos, por lo que están contraindicados en este antecedente."},
+{q:"Un paciente con DM2 en tratamiento con un inhibidor de SGLT2 presenta episodios recurrentes de balanitis candidiásica. ¿Cuál es el fármaco implicado?",o:["Sitagliptina","Dapagliflozina","Glibenclamida","Insulina"],a:1,j:"Los inhibidores de SGLT2 aumentan la glucosa urinaria, favoreciendo infecciones micóticas genitales como efecto adverso característico."},
+{q:"Un paciente con DM2 presenta hipoglucemia sintomática tras retrasar su almuerzo. ¿Cuál de los siguientes fármacos es el más probable responsable?",o:["Sitagliptina","Metformina","Glibenclamida","Empagliflozina"],a:2,j:"Las sulfonilureas estimulan la secreción de insulina independientemente de la glucemia, representando el mayor riesgo de hipoglucemia entre los hipoglucemiantes orales."},
+{q:"Un paciente con TFG de 25 ml/min/1.73m² está en tratamiento con un hipoglucemiante oral. ¿Cuál de los siguientes debe suspenderse por riesgo de acidosis láctica?",o:["Sitagliptina","Metformina","Glibenclamida","Empagliflozina"],a:1,j:"Con TFG reducida de forma marcada, la metformina se acumula y aumenta el riesgo de acidosis láctica, por lo que debe suspenderse."},
+{q:"Un paciente con DM2 logra buen control glucémico con bajo riesgo de hipoglucemia gracias a un fármaco que prolonga la acción de las incretinas endógenas. ¿Cuál es este fármaco?",o:["Glibenclamida","Sitagliptina","Insulina","Pioglitazona"],a:1,j:"Los inhibidores de DPP-4, como la sitagliptina, prolongan la acción de las incretinas endógenas con bajo riesgo de hipoglucemia."},
+{q:"Un paciente con DM2 e insuficiencia cardíaca con FEVI reducida requiere ajuste terapéutico. ¿Cuál de los siguientes fármacos ha demostrado reducir las hospitalizaciones por insuficiencia cardíaca?",o:["Pioglitazona","Glibenclamida","Empagliflozina","Insulina de acción rápida en monoterapia"],a:2,j:"Los inhibidores de SGLT2 han demostrado, en estudios clínicos, reducir las hospitalizaciones por insuficiencia cardíaca en pacientes con DM2."},
+{q:"Un paciente obeso con DM2 busca un fármaco que además de mejorar el control glucémico le ayude a perder peso de forma significativa. ¿Cuál sería la mejor opción entre las siguientes?",o:["Glibenclamida","Insulina NPH","Semaglutida","Pioglitazona"],a:2,j:"Los agonistas de GLP-1, como la semaglutida, producen pérdida de peso significativa por su efecto sobre el vaciamiento gástrico y el apetito."},
+{q:"Un paciente en el posoperatorio inmediato, en ayuno, tratado crónicamente con un inhibidor de SGLT2, desarrolla náuseas, malestar y cetonemia positiva con glucemia solo moderadamente elevada. ¿Qué fármaco es el más probable responsable de este cuadro?",o:["Metformina","Dapagliflozina","Sitagliptina","Glibenclamida"],a:1,j:"Los inhibidores de SGLT2 pueden producir cetoacidosis diabética euglucémica en contextos de estrés metabólico, cirugía o ayuno prolongado."},
+{q:"Un niño con asma usa un broncodilatador de rescate y presenta temblor y taquicardia tras cada inhalación. ¿Cuál es el fármaco más probable?",o:["Ipratropio","Salbutamol","Montelukast","Teofilina"],a:1,j:"El salbutamol, agonista beta-2 de acción corta, puede producir temblor y taquicardia por estimulación cruzada de receptores beta-1."},
+{q:"Un paciente con EPOC en tratamiento inhalado crónico refiere sequedad bucal persistente y ocasional retención urinaria. ¿Cuál es el fármaco más probable responsable?",o:["Salbutamol","Tiotropio","Montelukast","Formoterol"],a:1,j:"El tiotropio, anticolinérgico inhalado, bloquea receptores muscarínicos produciendo sequedad bucal y pudiendo dificultar la micción."},
+{q:"Un adolescente atleta con broncoespasmo inducido por ejercicio recibe un fármaco oral que bloquea receptores de leucotrienos. ¿Cuál es?",o:["Salbutamol","Montelukast","Ipratropio","Teofilina"],a:1,j:"Montelukast es un antagonista de receptores de leucotrienos, útil como tratamiento adyuvante en el broncoespasmo inducido por ejercicio."},
+{q:"Un paciente con fracturas costales y tos dolorosa recibe un antitusígeno que además le proporciona analgesia por su acción sobre receptores opioides mu. ¿Cuál es el fármaco?",o:["Dextrometorfano","Codeína","Simeticona","Montelukast"],a:1,j:"La codeína, al activar receptores opioides mu, combina efecto antitusígeno y analgésico, útil en este contexto clínico."},
+{q:"Un paciente con hiperuricemia crónica y tofos requiere un fármaco que inhiba la producción de ácido úrico a largo plazo. ¿Cuál es?",o:["Colchicina","Alopurinol","Ibuprofeno","Furosemida"],a:1,j:"El alopurinol inhibe la xantina oxidasa, reduciendo la producción de ácido úrico de forma sostenida, siendo la base del tratamiento crónico de la gota."},
+{q:"Un paciente asmático usa un broncodilatador que, mediante activación de la bomba Na+/K+-ATPasa, puede producir hipopotasemia transitoria. ¿Cuál es el fármaco?",o:["Ipratropio","Formoterol","Montelukast","Teofilina"],a:1,j:"Los beta-2 agonistas de acción prolongada, como el formoterol, activan la bomba Na+/K+-ATPasa desplazando potasio al interior celular."},
+{q:"Un paciente con crisis aguda de gota consulta si puede iniciar de inmediato un fármaco hipouricemiante. ¿Cuál de los siguientes NO debe iniciarse durante el episodio agudo?",o:["Colchicina","Alopurinol","AINEs","Corticoides orales de ciclo corto"],a:1,j:"El alopurinol no debe iniciarse durante la crisis aguda, ya que puede prolongar o empeorar el episodio inflamatorio."},
+{q:"Un paciente con HPB y asma tratado con un anticolinérgico inhalado desarrolla dificultad para orinar. ¿Cuál es el fármaco más probable implicado?",o:["Salbutamol","Ipratropio","Montelukast","Formoterol"],a:1,j:"El ipratropio bloquea receptores muscarínicos en el detrusor vesical, pudiendo precipitar retención urinaria en pacientes con HPB."},
+{q:"Un paciente con tos seca leve posterior a una infección viral recibe un antitusígeno de acción central sin actividad analgésica relevante. ¿Cuál es el fármaco?",o:["Codeína","Dextrometorfano","Morfina","Metadona"],a:1,j:"El dextrometorfano actúa sobre el centro bulbar de la tos sin poseer actividad opioide analgésica relevante a dosis terapéuticas."},
+{q:"Un paciente con gota aguda recibe un fármaco cuyo mecanismo antiinflamatorio consiste en inhibir la migración de neutrófilos sin modificar la síntesis de ácido úrico. ¿Cuál es?",o:["Alopurinol","Colchicina","Febuxostat","Probenecid"],a:1,j:"La colchicina actúa inhibiendo la migración y activación de neutrófilos, sin efecto sobre la síntesis de ácido úrico."}
+];
+
+</script>
+<script>
+(function(){
+  const introEl = document.getElementById('screen-intro');
+  const quizEl = document.getElementById('screen-quiz');
+  const resultsEl = document.getElementById('screen-results');
+
+  const progressFill = document.getElementById('progress-fill');
+  const counterEl = document.getElementById('counter');
+  const scorePill = document.getElementById('score-pill');
+  const chartNum = document.getElementById('chart-num');
+  const questionText = document.getElementById('question-text');
+  const optionsContainer = document.getElementById('options-container');
+  const feedbackEl = document.getElementById('feedback');
+  const feedbackLead = document.getElementById('feedback-lead');
+  const feedbackText = document.getElementById('feedback-text');
+  const btnNext = document.getElementById('btn-next');
+
+  const finalScoreEl = document.getElementById('final-score');
+  const verdictText = document.getElementById('verdict-text');
+  const reviewList = document.getElementById('review-list');
+  const btnReview = document.getElementById('btn-review');
+  const btnRestart = document.getElementById('btn-restart');
+
+  let order = [];
+  let current = 0;
+  let score = 0;
+  let answers = []; // {chosen, correct}
+  let locked = false;
+
+  function shuffled(n){
+    const arr = Array.from({length:n}, (_,i)=>i);
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function startQuiz(){
+    order = shuffled(QUIZ_DATA.length);
+    current = 0;
+    score = 0;
+    answers = [];
+    locked = false;
+    introEl.classList.add('hidden');
+    resultsEl.classList.add('hidden');
+    quizEl.classList.remove('hidden');
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    locked = false;
+    const idx = order[current];
+    const item = QUIZ_DATA[idx];
+    const total = QUIZ_DATA.length;
+
+    progressFill.style.width = ((current)/total*100) + '%';
+    counterEl.textContent = (current+1) + ' / ' + total;
+    scorePill.textContent = 'Aciertos: ' + score;
+    chartNum.textContent = 'CASO CLÍNICO N.° ' + String(current+1).padStart(3,'0');
+    questionText.textContent = item.q;
+
+    optionsContainer.innerHTML = '';
+    const letters = ['A','B','C','D'];
+    item.o.forEach((optText, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.innerHTML = '<span class="letter">'+letters[i]+'</span><span>'+optText+'</span>';
+      btn.addEventListener('click', () => selectOption(i, idx));
+      optionsContainer.appendChild(btn);
+    });
+
+    feedbackEl.classList.remove('show','correct','wrong');
+    btnNext.disabled = true;
+    btnNext.textContent = (current === total-1) ? 'Ver resultado final →' : 'Siguiente pregunta →';
+  }
+
+  function selectOption(chosenIdx, dataIdx){
+    if(locked) return;
+    locked = true;
+    const item = QUIZ_DATA[dataIdx];
+    const opts = optionsContainer.querySelectorAll('.opt');
+    const isCorrect = chosenIdx === item.a;
+
+    opts.forEach((el, i) => {
+      el.classList.add('locked');
+      if(i === item.a) el.classList.add('correct');
+      if(i === chosenIdx && i !== item.a) el.classList.add('wrong');
+      if(i !== item.a && i !== chosenIdx) el.classList.add('dim');
+    });
+
+    if(isCorrect) score++;
+    answers.push({dataIdx: dataIdx, chosen: chosenIdx, correct: item.a, isCorrect: isCorrect});
+
+    feedbackEl.classList.add('show', isCorrect ? 'correct' : 'wrong');
+    feedbackLead.textContent = isCorrect ? 'Correcto.' : 'Incorrecto.';
+    feedbackText.textContent = item.j;
+
+    scorePill.textContent = 'Aciertos: ' + score;
+    btnNext.disabled = false;
+  }
+
+  function nextQuestion(){
+    if(!locked) return;
+    current++;
+    if(current >= order.length){
+      showResults();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function showResults(){
+    quizEl.classList.add('hidden');
+    resultsEl.classList.remove('hidden');
+    progressFill.style.width = '100%';
+    finalScoreEl.innerHTML = score + '<span>/' + QUIZ_DATA.length + '</span>';
+    const pct = Math.round(score/QUIZ_DATA.length*100);
+    let verdict;
+    if(pct >= 90) verdict = 'Excelente dominio del contenido. Nivel de aprobación alto.';
+    else if(pct >= 75) verdict = 'Buen desempeño. Revisa los ítems fallados antes del examen.';
+    else if(pct >= 60) verdict = 'Desempeño aceptable, pero conviene reforzar varios temas.';
+    else verdict = 'Se recomienda repasar los mecanismos farmacológicos con más detenimiento.';
+    verdictText.textContent = pct + '% de respuestas correctas. ' + verdict;
+
+    reviewList.innerHTML = '';
+    reviewList.classList.add('hidden');
+    answers.forEach((ans, i) => {
+      const item = QUIZ_DATA[ans.dataIdx];
+      const div = document.createElement('div');
+      div.className = 'review-item';
+      const letters = ['A','B','C','D'];
+      div.innerHTML =
+        '<div class="rq"><span class="tick '+(ans.isCorrect?'ok':'no')+'">'+(ans.isCorrect?'✔':'✘')+'</span><span>'+(i+1)+'. '+item.q+'</span></div>'+
+        '<div class="ra">Tu respuesta: <strong>'+letters[ans.chosen]+') '+item.o[ans.chosen]+'</strong>'+(ans.isCorrect?'':' — Correcta: <strong>'+letters[ans.correct]+') '+item.o[ans.correct]+'</strong>')+'</div>'+
+        '<div class="rj">'+item.j+'</div>';
+      reviewList.appendChild(div);
+    });
+  }
+
+  document.getElementById('btn-start').addEventListener('click', startQuiz);
+  btnNext.addEventListener('click', nextQuestion);
+  btnRestart.addEventListener('click', startQuiz);
+  btnReview.addEventListener('click', () => {
+    reviewList.classList.toggle('hidden');
+    btnReview.textContent = reviewList.classList.contains('hidden') ? 'Revisar todas las respuestas' : 'Ocultar revisión';
+  });
+})();
+</script>
+</body>
+</html>
